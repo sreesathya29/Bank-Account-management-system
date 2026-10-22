@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bank System — Gen Z Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #1a1a28;
+    --border: #2a2a3d;
+    --accent: #7c3aed;
+    --accent2: #06b6d4;
+    --accent3: #f59e0b;
+    --accent4: #10b981;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --glow: rgba(124,58,237,0.3);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 20%, rgba(124,58,237,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(6,182,212,0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── LANGUAGE SELECTOR ── */
+  .lang-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 12px 24px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .lang-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .lang-btn:hover, .lang-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    z-index: 1;
+    padding: 120px 24px 60px;
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(124,58,237,0.4);
+    border-radius: 40px;
+    padding: 6px 16px;
+    font-size: 13px;
+    color: #a78bfa;
+    margin-bottom: 24px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .hero-badge span { animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0%,100% { opacity:1; }
+    50% { opacity:0.4; }
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 7vw, 72px);
+    font-weight: 800;
+    line-height: 1.05;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    color: var(--muted);
+    font-size: clamp(15px, 2vw, 18px);
+    max-width: 600px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+  }
+
+  /* ── STATS ROW ── */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 60px;
+    position: relative;
+    z-index: 1;
+    padding: 0 24px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 28px;
+    text-align: center;
+    flex: 1;
+    min-width: 130px;
+    max-width: 180px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+  }
+  .stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* ── MAIN CONTENT ── */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    margin-top: 52px;
+  }
+  .section-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  /* ── CARDS ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(124,58,237,0.2);
+    border-color: var(--accent);
+  }
+  .card:hover::before { opacity: 1; }
+  .card-emoji { font-size: 32px; margin-bottom: 12px; }
+  .card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .card p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── FLOW CHART ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 24px;
+    overflow: hidden;
+  }
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+  }
+  .flow-bubble {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin-bottom: 10px;
+    position: relative;
+    transition: transform 0.3s;
+  }
+  .flow-bubble:hover { transform: scale(1.15); }
+  .flow-label {
+    font-size: 12px;
+    color: var(--muted);
+    max-width: 80px;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+  .flow-arrow {
+    font-size: 20px;
+    color: var(--accent);
+    padding: 0 6px;
+    padding-bottom: 20px;
+    opacity: 0.7;
+  }
+
+  /* ── TECH PILLS ── */
+  .tech-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .tech-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 40px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: default;
+    transition: all 0.2s;
+  }
+  .tech-pill:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    transform: scale(1.04);
+  }
+  .tech-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  /* ── FEATURE TABLE ── */
+  .feature-table {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .feature-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr 80px;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+  }
+  .feature-row:last-child { border-bottom: none; }
+  .feature-row:hover { background: rgba(124,58,237,0.06); }
+  .feature-row.header {
+    background: rgba(124,58,237,0.1);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  .status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .done { background: rgba(16,185,129,0.15); color: #10b981; }
+  .future { background: rgba(245,158,11,0.15); color: #f59e0b; }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: #0d0d14;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-x: auto;
+    position: relative;
+  }
+  .code-block .comment { color: #6272a4; }
+  .code-block .keyword { color: #ff79c6; }
+  .code-block .classname { color: #50fa7b; }
+  .code-block .string { color: #f1fa8c; }
+  .code-block .method { color: #8be9fd; }
+  .code-tag {
+    position: absolute;
+    top: 12px; right: 16px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* ── ACCORDION for Testing ── */
+  .accordion { display: flex; flex-direction: column; gap: 10px; }
+  .acc-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .acc-item:hover { border-color: var(--accent); }
+  .acc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    gap: 16px;
+  }
+  .acc-icon { font-size: 22px; }
+  .acc-arrow { transition: transform 0.3s; font-size: 18px; color: var(--accent); }
+  .acc-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .acc-body-inner { padding: 0 24px 20px; }
+  .acc-item.open .acc-arrow { transform: rotate(180deg); }
+  .acc-item.open .acc-body { max-height: 200px; }
+
+  /* ── FUTURE ROADMAP ── */
+  .roadmap {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    padding-left: 30px;
+  }
+  .roadmap::before {
+    content: '';
+    position: absolute;
+    left: 10px; top: 12px; bottom: 12px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent2));
+    border-radius: 2px;
+  }
+  .rm-item {
+    position: relative;
+    padding: 16px 24px 16px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 12px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .rm-item:hover { transform: translateX(6px); border-color: var(--accent2); }
+  .rm-item::before {
+    content: '';
+    position: absolute;
+    left: -25px; top: 50%;
+    transform: translateY(-50%);
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent2);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 10px var(--accent2);
+  }
+  .rm-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+  .rm-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* ── FOOTER ── */
+  .footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 40px 24px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 600px) {
+    .feature-row { grid-template-columns: 30px 1fr 80px; }
+    .feature-row .old-way { display: none; }
+    .flow-arrow { padding: 0 2px; font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LANGUAGE BAR -->
+<div class="lang-bar" id="langBar">
+  <button class="lang-btn active" onclick="setLang('en')">🇬🇧 EN</button>
+  <button class="lang-btn" onclick="setLang('hi')">🇮🇳 HI</button>
+  <button class="lang-btn" onclick="setLang('te')">🇮🇳 TE</button>
+  <button class="lang-btn" onclick="setLang('fr')">🇫🇷 FR</button>
+  <button class="lang-btn" onclick="setLang('ar')">🇸🇦 AR</button>
+  <button class="lang-btn" onclick="setLang('zh')">🇨🇳 ZH</button>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge"><span>●</span> <span id="badge-text">Java Project Deep Dive</span></div>
+  <h1 id="hero-title">Bank Account<br/>Management System</h1>
+  <p class="hero-sub" id="hero-sub">No cap — this is a full ATM simulator built in Java. Let's break down what it actually does, how it works, and why it's lowkey impressive. 🏦</p>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-card reveal">
+    <div class="stat-num">12</div>
+    <div class="stat-label" id="stat1">Java Files</div>
+  </div>
+  <div class="stat-card reveal">
+    <div class="stat-num">5</div>
+    <div class="stat-label" id="stat2">DB Tables</div>
+  </div>
+  <div class="stat-card reveal">
+    <div class="stat-num">6</div>
+    <div class="stat-label" id="stat3">Features</div>
+  </div>
+  <div class="stat-card reveal">
+    <div class="stat-num">24/7</div>
+    <div class="stat-label" id="stat4">Access</div>
+  </div>
+  <div class="stat-card reveal">
+    <div class="stat-num">3</div>
+    <div class="stat-label" id="stat5">Tech Stack</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- WHAT IS IT -->
+  <div class="section-header reveal">
+    <div class="section-icon" style="background:rgba(124,58,237,0.2)">💳</div>
+    <div class="section-title" id="s1-title">What is this project?</div>
+  </div>
+  <div class="card-grid">
+    <div class="card reveal">
+      <div class="card-emoji">🏧</div>
+      <h3 id="c1h">ATM Simulator</h3>
+      <p id="c1p">A full desktop ATM simulator — you get a card number, PIN, and real transactions like deposit, withdraw, and balance check. It mimics exactly how a real ATM works.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-emoji">☕</div>
+      <h3 id="c2h">Built in Java</h3>
+      <p id="c2p">Uses Java Swing for the UI — that means real clickable windows and buttons, not a terminal. The backend is MySQL for storing your transactions safely.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-emoji">🔒</div>
+      <h3 id="c3h">PIN-Based Security</h3>
+      <p id="c3p">Login requires a card number + PIN. You can even change your PIN inside the app. Every transaction is tied to your unique PIN so data stays separated.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-emoji">📊</div>
+      <h3 id="c4h">Mini Statement</h3>
+      <p id="c4p">View your last transactions with dates and amounts — exactly like an ATM receipt. The card number is masked (e.g., 1234XXXXXXXX5678) for privacy.</p>
+    </div>
+  </div>
+
+  <!-- HOW IT FLOWS -->
+  <div class="section-header reveal">
+    <div class="section-icon" style="background:rgba(6,182,212,0.2)">🔄</div>
+    <div class="section-title" id="s2-title">User Journey (how it flows)</div>
+  </div>
+  <div class="flow reveal">
+    <div class="flow-step">
+      <div class="flow-bubble" style="background:rgba(124,58,237,0.2);">🚀</div>
+      <div class="flow-label" id="f1">Start / Launch</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-bubble" style="background:rgba(6,182,212,0.2);">🪪</div>
+      <div class="flow-label" id="f2">Sign Up / Login</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-bubble" style="background:rgba(245,158,11,0.2);">👁️</div>
+      <div class="flow-label" id="f3">View Account</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-bubble" style="background:rgba(16,185,129,0.2);">⚡</div>
+      <div class="flow-label" id="f4">Do Transactions</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-bubble" style="background:rgba(239,68,68,0.2);">✅</div>
+      <div class="flow-label" id="f5">Done / Exit</div>
+    </div>
+  </div>
+
+  <!-- FEATURES TABLE -->
+  <div class="section-header reveal">
+    <div class="section-icon" style="background:rgba(16,185,129,0.2)">⚡</div>
+    <div class="section-title" id="s3-title">Features: Old way vs This System</div>
+  </div>
+  <div class="feature-table reveal">
+    <div class="feature-row header">
+      <div></div>
+      <div id="th1">Feature</div>
+      <div id="th2" class="old-way">Traditional Bank</div>
+      <div id="th3">Status</div>
+    </div>
+    <div class="feature-row">
+      <div>💰</div>
+      <div id="fr1">Deposit Money</div>
+      <div class="old-way" id="fr1b">Physical counter visit</div>
+      <div><span class="status-badge done" id="done-text">Done ✓</span></div>
+    </div>
+    <div class="feature-row">
+      <div>🏧</div>
+      <div id="fr2">Cash Withdrawal</div>
+      <div class="old-way" id="fr2b">ATM or teller only</div>
+      <div><span class="status-badge done" id="done-text2">Done ✓</span></div>
+    </div>
+    <div class="feature-row">
+      <div>⚡</div>
+      <div id="fr3">Fast Cash</div>
+      <div class="old-way" id="fr3b">Not available</div>
+      <div><span class="status-badge done" id="done-text3">Done ✓</span></div>
+    </div>
+    <div class="feature-row">
+      <div>📜</div>
+      <div id="fr4">Mini Statement</div>
+      <div class="old-way" id="fr4b">Request at branch</div>
+      <div><span class="status-badge done" id="done-text4">Done ✓</span></div>
+    </div>
+    <div class="feature-row">
+      <div>🔑</div>
+      <div id="fr5">PIN Change</div>
+      <div class="old-way" id="fr5b">Bank visit + form</div>
+      <div><span class="status-badge done" id="done-text5">Done ✓</span></div>
+    </div>
+    <div class="feature-row">
+      <div>📱</div>
+      <div id="fr6">Mobile App</div>
+      <div class="old-way" id="fr6b">—</div>
+      <div><span class="status-badge future" id="future-text">Soon 🔜</span></div>
+    </div>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="section-header reveal">
+    <div class="section-icon" style="background:rgba(245,158,11,0.2)">🛠️</div>
+    <div class="section-title" id="s4-title">Tech Stack Breakdown</div>
+  </div>
+  <div class="tech-row reveal">
+    <div class="tech-pill"><div class="tech-dot" style="background:#f59e0b"></div><span id="tech1">Java — Frontend UI</span></div>
+    <div class="tech-pill"><div class="tech-dot" style="background:#06b6d4"></div><span id="tech2">MySQL — Database</span></div>
+    <div class="tech-pill"><div class="tech-dot" style="background:#a78bfa"></div><span id="tech3">JDBC — DB Bridge</span></div>
+    <div class="tech-pill"><div class="tech-dot" style="background:#10b981"></div><span id="tech4">Apache NetBeans — IDE</span></div>
+    <div class="tech-pill"><div class="tech-dot" style="background:#f87171"></div><span id="tech5">Swing — GUI Library</span></div>
+  </div>
+
+  <!-- CODE SNIPPET -->
+  <div class="section-header reveal">
+    <div class="section-icon" style="background:rgba(124,58,237,0.2)">💻</div>
+    <div class="section-title" id="s5-title">Core Code — Balance Check Logic</div>
+  </div>
+  <div class="code-block reveal">
+    <div class="code-tag">BalanceEnquiry.java</div>
+<span class="comment">// Loop through all transactions for this PIN</span>
+<span class="keyword">int</span> balance = <span class="string">0</span>;
+ResultSet rs = c.s.executeQuery(
+  <span class="string">"SELECT * FROM bank WHERE pin = '"</span> + pinnumber + <span class="string">"'"</span>
+);
+<span class="keyword">while</span>(rs.<span class="method">next</span>()) {
+  <span class="keyword">if</span> (rs.<span class="method">getString</span>(<span class="string">"type"</span>).<span class="method">equals</span>(<span class="string">"Deposit"</span>)) {
+    balance += Integer.<span class="method">parseInt</span>(rs.<span class="method">getString</span>(<span class="string">"amount"</span>));
+  } <span class="keyword">else</span> {
+    balance -= Integer.<span class="method">parseInt</span>(rs.<span class="method">getString</span>(<span class="string">"amount"</span>));
+  }
+}
+  </div>
+  <p style="font-size:13px;color:var(--muted);margin-top:12px;padding:0 4px;" id="code-explain">
+    💡 This is how your balance is calculated — it adds all deposits and subtracts all withdrawals from your transaction history. Simple and effective!
+  </p>
+
+  <!-- TESTING -->
+  <div class="section-header reveal">
+    <div class="section-icon" style="background:rgba(239,68,68,0.2)">🧪</div>
+    <div class="section-title" id="s6-title">Testing (QA Breakdown)</div>
+  </div>
+  <div class="accordion reveal">
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-header">
+        <div class="acc-icon">🔬</div>
+        <div style="flex:1" id="a1h">Unit Testing — Testing individual functions</div>
+        <div class="acc-arrow">⌄</div>
+      </div>
+      <div class="acc-body"><div class="acc-body-inner" id="a1b">Each function like deposit(), withdraw(), checkBalance() is tested individually to make sure it does exactly what it's supposed to do. Think of it like testing each ingredient before cooking the dish.</div></div>
+    </div>
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-header">
+        <div class="acc-icon">🔗</div>
+        <div style="flex:1" id="a2h">Integration Testing — Modules talking to each other</div>
+        <div class="acc-arrow">⌄</div>
+      </div>
+      <div class="acc-body"><div class="acc-body-inner" id="a2b">Tests what happens when the login module passes the PIN to the transaction module. Like checking if a relay baton handoff actually works — not just the individual runners.</div></div>
+    </div>
+    <div class="acc-item" onclick="toggleAcc(this)">
+      <div class="acc-header">
+        <div class="acc-icon">🖥️</div>
+        <div style="flex:1" id="a3h">System Testing — The full end-to-end experience</div>
+        <div class="acc-arrow">⌄</div>
+      </div>
+      <div class="acc-body"><div class="acc-body-inner" id="a3b">The whole system is run as a real user would use it — from sign up, through transactions, to logout. This is the final boss level of testing to confirm everything works together.</div></div>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="section-header reveal">
+    <div class="section-icon" style="background:rgba(6,182,212,0.2)">🚀</div>
+    <div class="section-title" id="s7-title">Future Roadmap</div>
+  </div>
+  <div class="roadmap reveal">
+    <div class="rm-item">
+      <div class="rm-title" id="rm1t">📱 Mobile App</div>
+      <div class="rm-desc" id="rm1d">A dedicated app so users can access their account anytime from their phone — without ever visiting a branch.</div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-title" id="rm2t">🌍 International ATM Network</div>
+      <div class="rm-desc" id="rm2d">Expand the system to support multiple branches and international transactions across different countries.</div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-title" id="rm3t">🤖 Smart Help Desk</div>
+      <div class="rm-desc" id="rm3d">AI-powered customer support that understands user needs and provides instant help — no waiting on hold.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p id="footer-text">Bank Account Management System — Java Project · Built with ☕ Java + 🐬 MySQL</p>
+  <p style="margin-top:6px;font-size:11px;color:#475569;" id="footer-sub">Interactive explainer — switch languages using the top bar</p>
+</div>
+
+<script>
+// ── TRANSLATIONS ──
+const t = {
+  en: {
+    badge: "Java Project Deep Dive",
+    heroTitle: "Bank Account<br/>Management System",
+    heroSub: "No cap — this is a full ATM simulator built in Java. Let's break down what it actually does, how it works, and why it's lowkey impressive. 🏦",
+    stat1:"Java Files", stat2:"DB Tables", stat3:"Features", stat4:"Access", stat5:"Tech Stack",
+    s1:"What is this project?", s2:"User Journey (how it flows)", s3:"Features: Old way vs This System",
+    s4:"Tech Stack Breakdown", s5:"Core Code — Balance Check Logic", s6:"Testing (QA Breakdown)", s7:"Future Roadmap",
+    c1h:"ATM Simulator", c1p:"A full desktop ATM simulator — you get a card number, PIN, and real transactions like deposit, withdraw, and balance check. It mimics exactly how a real ATM works.",
+    c2h:"Built in Java", c2p:"Uses Java Swing for the UI — that means real clickable windows and buttons, not a terminal. The backend is MySQL for storing your transactions safely.",
+    c3h:"PIN-Based Security", c3p:"Login requires a card number + PIN. You can even change your PIN inside the app. Every transaction is tied to your unique PIN so data stays separated.",
+    c4h:"Mini Statement", c4p:"View your last transactions with dates and amounts — exactly like an ATM receipt. The card number is masked (e.g., 1234XXXXXXXX5678) for privacy.",
+    f1:"Start / Launch", f2:"Sign Up / Login", f3:"View Account", f4:"Do Transactions", f5:"Done / Exit",
+    th1:"Feature", th2:"Traditional Bank", th3:"Status",
+    fr1:"Deposit Money", fr1b:"Physical counter visit",
+    fr2:"Cash Withdrawal", fr2b:"ATM or teller only",
+    fr3:"Fast Cash", fr3b:"Not available",
+    fr4:"Mini Statement", fr4b:"Request at branch",
+    fr5:"PIN Change", fr5b:"Bank visit + form",
+    fr6:"Mobile App", fr6b:"—",
+    doneText:"Done ✓", futureText:"Soon 🔜",
+    tech1:"Java — Frontend UI", tech2:"MySQL — Database", tech3:"JDBC — DB Bridge", tech4:"Apache NetBeans — IDE", tech5:"Swing — GUI Library",
+    codeExplain:"💡 This is how your balance is calculated — it adds all deposits and subtracts all withdrawals from your transaction history. Simple and effective!",
+    a1h:"Unit Testing — Testing individual functions", a1b:"Each function like deposit(), withdraw(), checkBalance() is tested individually to make sure it does exactly what it's supposed to do. Think of it like testing each ingredient before cooking the dish.",
+    a2h:"Integration Testing — Modules talking to each other", a2b:"Tests what happens when the login module passes the PIN to the transaction module. Like checking if a relay baton handoff actually works — not just the individual runners.",
+    a3h:"System Testing — The full end-to-end experience", a3b:"The whole system is run as a real user would use it — from sign up, through transactions, to logout. This is the final boss level of testing to confirm everything works together.",
+    rm1t:"📱 Mobile App", rm1d:"A dedicated app so users can access their account anytime from their phone — without ever visiting a branch.",
+    rm2t:"🌍 International ATM Network", rm2d:"Expand the system to support multiple branches and international transactions across different countries.",
+    rm3t:"🤖 Smart Help Desk", rm3d:"AI-powered customer support that understands user needs and provides instant help — no waiting on hold.",
+    footer:"Bank Account Management System — Java Project · Built with ☕ Java + 🐬 MySQL",
+    footerSub:"Interactive explainer — switch languages using the top bar"
+  },
+  hi: {
+    badge: "Java प्रोजेक्ट गहन विश्लेषण",
+    heroTitle: "बैंक खाता<br/>प्रबंधन प्रणाली",
+    heroSub: "यह Java में बना एक पूर्ण ATM सिम्युलेटर है। आइए जानते हैं यह वास्तव में क्या करता है, कैसे काम करता है। 🏦",
+    stat1:"Java फाइलें", stat2:"DB टेबल", stat3:"फीचर्स", stat4:"उपलब्धता", stat5:"टेक स्टैक",
+    s1:"यह प्रोजेक्ट क्या है?", s2:"यूज़र जर्नी (प्रवाह)", s3:"फीचर: पुरानी प्रणाली vs यह सिस्टम",
+    s4:"टेक्नोलॉजी स्टैक", s5:"मुख्य कोड — बैलेंस चेक लॉजिक", s6:"परीक्षण (QA)", s7:"भविष्य की योजना",
+    c1h:"ATM सिम्युलेटर", c1p:"एक पूर्ण डेस्कटॉप ATM — कार्ड नंबर, PIN और असली लेनदेन जैसे जमा, निकासी और बैलेंस जांच।",
+    c2h:"Java में बना", c2p:"Java Swing से UI बना है — असली क्लिकेबल विंडो और बटन। बैकएंड में MySQL डेटा सुरक्षित रखता है।",
+    c3h:"PIN सुरक्षा", c3p:"लॉगिन के लिए कार्ड नंबर + PIN चाहिए। ऐप के अंदर PIN बदला जा सकता है।",
+    c4h:"मिनी स्टेटमेंट", c4p:"तारीख और राशि के साथ पिछले लेनदेन देखें — बिल्कुल ATM रसीद की तरह।",
+    f1:"शुरू करें", f2:"साइनअप/लॉगिन", f3:"खाता देखें", f4:"लेनदेन करें", f5:"समाप्त/बाहर",
+    th1:"फीचर", th2:"पारंपरिक बैंक", th3:"स्थिति",
+    fr1:"पैसे जमा करें", fr1b:"काउंटर पर जाएं", fr2:"नकद निकासी", fr2b:"ATM या टेलर", fr3:"फास्ट कैश", fr3b:"उपलब्ध नहीं",
+    fr4:"मिनी स्टेटमेंट", fr4b:"शाखा में अनुरोध", fr5:"PIN बदलें", fr5b:"बैंक जाएं", fr6:"मोबाइल ऐप", fr6b:"—",
+    doneText:"हो गया ✓", futureText:"जल्द 🔜",
+    tech1:"Java — UI", tech2:"MySQL — डेटाबेस", tech3:"JDBC — DB ब्रिज", tech4:"NetBeans — IDE", tech5:"Swing — GUI",
+    codeExplain:"💡 इस तरह बैलेंस की गणना होती है — सभी जमा जोड़े और निकासी घटाई जाती है।",
+    a1h:"यूनिट टेस्टिंग", a1b:"प्रत्येक फ़ंक्शन को अलग-अलग जांचा जाता है जैसे खाना बनाने से पहले हर सामग्री चेक करना।",
+    a2h:"इंटीग्रेशन टेस्टिंग", a2b:"जांचता है कि मॉड्यूल आपस में सही तरीके से काम करते हैं या नहीं।",
+    a3h:"सिस्टम टेस्टिंग", a3b:"पूरे सिस्टम को असली उपयोगकर्ता की तरह चलाया जाता है — साइनअप से लेकर लॉगआउट तक।",
+    rm1t:"📱 मोबाइल ऐप", rm1d:"फ़ोन से कभी भी खाता एक्सेस करें — बैंक जाने की जरूरत नहीं।",
+    rm2t:"🌍 अंतरराष्ट्रीय नेटवर्क", rm2d:"कई शाखाओं और अंतरराष्ट्रीय लेनदेन के लिए विस्तार।",
+    rm3t:"🤖 स्मार्ट हेल्प डेस्क", rm3d:"AI-आधारित ग्राहक सेवा जो तुरंत मदद करे।",
+    footer:"बैंक खाता प्रबंधन प्रणाली — Java प्रोजेक्ट · ☕ Java + 🐬 MySQL",
+    footerSub:"भाषा बदलने के लिए ऊपर बार का उपयोग करें"
+  },
+  te: {
+    badge: "Java ప్రాజెక్ట్ విశ్లేషణ",
+    heroTitle: "బ్యాంక్ అకౌంట్<br/>మేనేజ్‌మెంట్ సిస్టమ్",
+    heroSub: "ఇది Java లో నిర్మించిన పూర్తి ATM సిమ్యులేటర్. ఇది ఎలా పని చేస్తుందో చూద్దాం. 🏦",
+    stat1:"Java ఫైళ్ళు", stat2:"DB టేబుళ్ళు", stat3:"ఫీచర్లు", stat4:"యాక్సెస్", stat5:"టెక్ స్టాక్",
+    s1:"ఈ ప్రాజెక్ట్ ఏమిటి?", s2:"యూజర్ జర్నీ", s3:"ఫీచర్లు: పాత vs ఈ సిస్టమ్",
+    s4:"టెక్నాలజీ స్టాక్", s5:"ముఖ్యమైన కోడ్", s6:"పరీక్షలు (QA)", s7:"భవిష్యత్ ప్రణాళిక",
+    c1h:"ATM సిమ్యులేటర్", c1p:"పూర్తి డెస్క్‌టాప్ ATM — కార్డ్ నంబర్, PIN మరియు నిజమైన లావాదేవీలు.",
+    c2h:"Java లో నిర్మించారు", c2p:"Java Swing UI కోసం వాడారు. MySQL బ్యాకెండ్ లావాదేవీలు సురక్షితంగా నిల్వ చేస్తుంది.",
+    c3h:"PIN భద్రత", c3p:"లాగిన్ కి కార్డ్ నంబర్ + PIN అవసరం. యాప్ లో PIN మార్చవచ్చు.",
+    c4h:"మినీ స్టేట్‌మెంట్", c4p:"తేదీ మరియు మొత్తంతో చివరి లావాదేవీలు చూడవచ్చు.",
+    f1:"ప్రారంభం", f2:"సైన్‌అప్/లాగిన్", f3:"అకౌంట్ చూడు", f4:"లావాదేవీలు", f5:"పూర్తి/నిష్క్రమించు",
+    th1:"ఫీచర్", th2:"పాత బ్యాంక్", th3:"స్థితి",
+    fr1:"డిపాజిట్", fr1b:"కౌంటర్‌కు వెళ్ళాలి", fr2:"నగదు ఉపసంహరణ", fr2b:"ATM మాత్రమే", fr3:"ఫాస్ట్ క్యాష్", fr3b:"అందుబాటులో లేదు",
+    fr4:"మినీ స్టేట్‌మెంట్", fr4b:"శాఖలో అభ్యర్థన", fr5:"PIN మార్పు", fr5b:"బ్యాంక్‌కు వెళ్ళాలి", fr6:"మొబైల్ యాప్", fr6b:"—",
+    doneText:"పూర్తైంది ✓", futureText:"త్వరలో 🔜",
+    tech1:"Java — UI", tech2:"MySQL — డేటాబేస్", tech3:"JDBC — కనెక్టర్", tech4:"NetBeans — IDE", tech5:"Swing — GUI",
+    codeExplain:"💡 ఇలా బ్యాలెన్స్ లెక్కిస్తారు — అన్ని డిపాజిట్లు కలిపి, ఉపసంహరణలు తీసివేస్తారు.",
+    a1h:"యూనిట్ టెస్టింగ్", a1b:"ప్రతి ఫంక్షన్‌ను విడిగా పరీక్షిస్తారు.",
+    a2h:"ఇంటిగ్రేషన్ టెస్టింగ్", a2b:"మాడ్యూళ్ళు కలిసి పని చేస్తాయో లేదో తనిఖీ చేస్తారు.",
+    a3h:"సిస్టమ్ టెస్టింగ్", a3b:"పూర్తి సిస్టమ్‌ను నిజమైన వినియోగదారు వలె అమలు చేస్తారు.",
+    rm1t:"📱 మొబైల్ యాప్", rm1d:"ఫోన్ నుండి ఎప్పుడైనా అకౌంట్ యాక్సెస్ చేయండి.",
+    rm2t:"🌍 అంతర్జాతీయ నెట్‌వర్క్", rm2d:"బహుళ శాఖలు మరియు అంతర్జాతీయ లావాదేవీలకు విస్తరణ.",
+    rm3t:"🤖 స్మార్ట్ హెల్ప్ డెస్క్", rm3d:"AI ఆధారిత కస్టమర్ సపోర్ట్ వెంటనే సహాయం అందిస్తుంది.",
+    footer:"బ్యాంక్ అకౌంట్ మేనేజ్‌మెంట్ సిస్టమ్ — Java ప్రాజెక్ట్ · ☕ Java + 🐬 MySQL",
+    footerSub:"భాష మార్చడానికి పై బార్ వాడండి"
+  },
+  fr: {
+    badge: "Analyse du Projet Java",
+    heroTitle: "Système de Gestion<br/>de Compte Bancaire",
+    heroSub: "Un simulateur ATM complet en Java. Décortiquons ce qu'il fait, comment ça marche et pourquoi c'est impressionnant. 🏦",
+    stat1:"Fichiers Java", stat2:"Tables DB", stat3:"Fonctionnalités", stat4:"Disponibilité", stat5:"Stack Tech",
+    s1:"C'est quoi ce projet?", s2:"Parcours Utilisateur", s3:"Fonctionnalités: Ancien vs Ce Système",
+    s4:"Stack Technologique", s5:"Code Principal — Logique de Solde", s6:"Tests (QA)", s7:"Feuille de Route Future",
+    c1h:"Simulateur ATM", c1p:"Un ATM de bureau complet — numéro de carte, PIN et transactions réelles comme dépôt, retrait et vérification de solde.",
+    c2h:"Construit en Java", c2p:"Java Swing pour l'UI — des vraies fenêtres cliquables. MySQL stocke les transactions en sécurité.",
+    c3h:"Sécurité par PIN", c3p:"Connexion avec numéro de carte + PIN. Changement de PIN possible dans l'app.",
+    c4h:"Mini Relevé", c4p:"Voir les dernières transactions avec dates et montants — comme un reçu ATM.",
+    f1:"Démarrer", f2:"Inscription/Connexion", f3:"Voir Compte", f4:"Transactions", f5:"Terminer/Quitter",
+    th1:"Fonctionnalité", th2:"Banque Traditionnelle", th3:"Statut",
+    fr1:"Dépôt d'argent", fr1b:"Visite physique au guichet", fr2:"Retrait d'espèces", fr2b:"ATM ou guichetier", fr3:"Retrait rapide", fr3b:"Non disponible",
+    fr4:"Mini Relevé", fr4b:"Demande en agence", fr5:"Changement de PIN", fr5b:"Visite en banque", fr6:"Application Mobile", fr6b:"—",
+    doneText:"Fait ✓", futureText:"Bientôt 🔜",
+    tech1:"Java — Interface", tech2:"MySQL — Base de données", tech3:"JDBC — Pont DB", tech4:"NetBeans — IDE", tech5:"Swing — Bibliothèque GUI",
+    codeExplain:"💡 C'est ainsi que le solde est calculé — on additionne tous les dépôts et on soustrait tous les retraits.",
+    a1h:"Tests Unitaires", a1b:"Chaque fonction est testée individuellement — comme goûter chaque ingrédient avant de cuisiner.",
+    a2h:"Tests d'Intégration", a2b:"Vérifie que les modules communiquent correctement entre eux.",
+    a3h:"Tests Système", a3b:"Le système complet est exécuté comme un vrai utilisateur — de l'inscription à la déconnexion.",
+    rm1t:"📱 Application Mobile", rm1d:"Accédez à votre compte n'importe quand depuis votre téléphone.",
+    rm2t:"🌍 Réseau ATM International", rm2d:"Étendre le système à plusieurs agences et transactions internationales.",
+    rm3t:"🤖 Service Client Intelligent", rm3d:"Support client IA qui fournit une aide instantanée.",
+    footer:"Système de Gestion de Compte Bancaire — Projet Java · ☕ Java + 🐬 MySQL",
+    footerSub:"Changer de langue via la barre en haut"
+  },
+  ar: {
+    badge: "تحليل مشروع Java",
+    heroTitle: "نظام إدارة<br/>الحسابات البنكية",
+    heroSub: "محاكي ATM كامل مبني بـ Java. دعنا نشرح ما يفعله وكيف يعمل. 🏦",
+    stat1:"ملفات Java", stat2:"جداول DB", stat3:"ميزات", stat4:"الوصول", stat5:"التقنيات",
+    s1:"ما هو هذا المشروع؟", s2:"رحلة المستخدم", s3:"الميزات: النظام القديم مقابل هذا النظام",
+    s4:"مكدس التقنيات", s5:"الكود الأساسي — منطق رصيد الحساب", s6:"الاختبارات (QA)", s7:"خارطة الطريق المستقبلية",
+    c1h:"محاكي ATM", c1p:"محاكي ATM كامل — رقم بطاقة، PIN، ومعاملات حقيقية كالإيداع والسحب.",
+    c2h:"مبني بـ Java", c2p:"Java Swing للواجهة — نوافذ وأزرار حقيقية. MySQL لتخزين المعاملات.",
+    c3h:"الأمان بالـ PIN", c3p:"يتطلب تسجيل الدخول رقم البطاقة + PIN. يمكن تغيير PIN داخل التطبيق.",
+    c4h:"كشف مصغر", c4p:"عرض آخر المعاملات مع التواريخ والمبالغ — مثل إيصال ATM.",
+    f1:"البدء", f2:"التسجيل/الدخول", f3:"عرض الحساب", f4:"المعاملات", f5:"إنهاء/خروج",
+    th1:"الميزة", th2:"البنك التقليدي", th3:"الحالة",
+    fr1:"إيداع المال", fr1b:"زيارة النافذة", fr2:"سحب نقدي", fr2b:"ATM أو موظف", fr3:"سحب سريع", fr3b:"غير متاح",
+    fr4:"كشف مصغر", fr4b:"طلب من الفرع", fr5:"تغيير PIN", fr5b:"زيارة البنك", fr6:"تطبيق الجوال", fr6b:"—",
+    doneText:"تم ✓", futureText:"قريباً 🔜",
+    tech1:"Java — الواجهة", tech2:"MySQL — قاعدة البيانات", tech3:"JDBC — جسر DB", tech4:"NetBeans — بيئة التطوير", tech5:"Swing — مكتبة GUI",
+    codeExplain:"💡 هكذا يُحسب الرصيد — تُضاف جميع الإيداعات وتُطرح جميع السحوبات.",
+    a1h:"اختبار الوحدة", a1b:"يُختبر كل دالة بشكل منفصل — مثل تذوق كل مكون قبل الطهي.",
+    a2h:"اختبار التكامل", a2b:"يتحقق مما إذا كانت الوحدات تعمل معاً بشكل صحيح.",
+    a3h:"اختبار النظام", a3b:"يُشغَّل النظام كاملاً كمستخدم حقيقي — من التسجيل حتى تسجيل الخروج.",
+    rm1t:"📱 تطبيق الجوال", rm1d:"الوصول إلى حسابك في أي وقت من هاتفك.",
+    rm2t:"🌍 شبكة ATM دولية", rm2d:"توسيع النظام لدعم فروع متعددة ومعاملات دولية.",
+    rm3t:"🤖 مكتب مساعدة ذكي", rm3d:"دعم عملاء بالذكاء الاصطناعي يقدم مساعدة فورية.",
+    footer:"نظام إدارة الحسابات البنكية — مشروع Java · ☕ Java + 🐬 MySQL",
+    footerSub:"تغيير اللغة عبر الشريط العلوي"
+  },
+  zh: {
+    badge: "Java 项目深度解析",
+    heroTitle: "银行账户<br/>管理系统",
+    heroSub: "这是一个用 Java 构建的完整 ATM 模拟器。让我们来看看它实际做什么，以及为什么它值得关注。🏦",
+    stat1:"Java 文件", stat2:"数据库表", stat3:"功能", stat4:"访问", stat5:"技术栈",
+    s1:"这个项目是什么？", s2:"用户旅程（流程）", s3:"功能：传统方式 vs 本系统",
+    s4:"技术栈分解", s5:"核心代码 — 余额查询逻辑", s6:"测试（QA）", s7:"未来路线图",
+    c1h:"ATM 模拟器", c1p:"完整的桌面 ATM 模拟器 — 提供卡号、PIN 和真实交易，如存款、取款和余额查询。",
+    c2h:"用 Java 构建", c2p:"使用 Java Swing 构建 UI — 真实的可点击窗口和按钮。MySQL 安全存储交易数据。",
+    c3h:"PIN 安全验证", c3p:"登录需要卡号 + PIN。可以在应用内更改 PIN。",
+    c4h:"简短账单", c4p:"查看最近的交易记录，包含日期和金额 — 就像 ATM 收据一样。",
+    f1:"启动", f2:"注册/登录", f3:"查看账户", f4:"进行交易", f5:"完成/退出",
+    th1:"功能", th2:"传统银行", th3:"状态",
+    fr1:"存款", fr1b:"需要到柜台", fr2:"取款", fr2b:"仅限 ATM 或柜员", fr3:"快速取款", fr3b:"不可用",
+    fr4:"简短账单", fr4b:"需要到支行申请", fr5:"修改 PIN", fr5b:"需要到银行", fr6:"手机 App", fr6b:"—",
+    doneText:"已完成 ✓", futureText:"即将推出 🔜",
+    tech1:"Java — 前端界面", tech2:"MySQL — 数据库", tech3:"JDBC — 数据库桥接", tech4:"NetBeans — 集成开发环境", tech5:"Swing — GUI 库",
+    codeExplain:"💡 余额计算方式：将所有存款相加，再减去所有取款记录。简单高效！",
+    a1h:"单元测试 — 测试单个功能", a1b:"每个函数单独测试，确保其按预期运行。就像烹饪前检查每种食材。",
+    a2h:"集成测试 — 模块间通信", a2b:"测试登录模块将 PIN 传递给交易模块时是否正常工作。",
+    a3h:"系统测试 — 完整端到端体验", a3b:"整个系统像真实用户一样运行 — 从注册、交易到退出登录。",
+    rm1t:"📱 手机 App", rm1d:"用户可以随时通过手机访问账户 — 无需前往银行。",
+    rm2t:"🌍 国际 ATM 网络", rm2d:"扩展系统以支持多个分行和跨国交易。",
+    rm3t:"🤖 智能帮助台", rm3d:"AI 驱动的客户支持，即时响应用户需求。",
+    footer:"银行账户管理系统 — Java 项目 · ☕ Java + 🐬 MySQL",
+    footerSub:"使用顶部栏切换语言"
+  }
+};
+
+function setLang(lang) {
+  const d = t[lang];
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
+
+  // RTL for Arabic
+  document.body.style.direction = lang === 'ar' ? 'rtl' : 'ltr';
+
+  const ids = [
+    ['badge-text',d.badge],['hero-title',d.heroTitle],['hero-sub',d.heroSub],
+    ['stat1',d.stat1],['stat2',d.stat2],['stat3',d.stat3],['stat4',d.stat4],['stat5',d.stat5],
+    ['s1-title',d.s1],['s2-title',d.s2],['s3-title',d.s3],['s4-title',d.s4],['s5-title',d.s5],['s6-title',d.s6],['s7-title',d.s7],
+    ['c1h',d.c1h],['c1p',d.c1p],['c2h',d.c2h],['c2p',d.c2p],['c3h',d.c3h],['c3p',d.c3p],['c4h',d.c4h],['c4p',d.c4p],
+    ['f1',d.f1],['f2',d.f2],['f3',d.f3],['f4',d.f4],['f5',d.f5],
+    ['th1',d.th1],['th2',d.th2],['th3',d.th3],
+    ['fr1',d.fr1],['fr1b',d.fr1b],['fr2',d.fr2],['fr2b',d.fr2b],['fr3',d.fr3],['fr3b',d.fr3b],
+    ['fr4',d.fr4],['fr4b',d.fr4b],['fr5',d.fr5],['fr5b',d.fr5b],['fr6',d.fr6],['fr6b',d.fr6b],
+    ['done-text',d.doneText],['done-text2',d.doneText],['done-text3',d.doneText],['done-text4',d.doneText],['done-text5',d.doneText],['future-text',d.futureText],
+    ['tech1',d.tech1],['tech2',d.tech2],['tech3',d.tech3],['tech4',d.tech4],['tech5',d.tech5],
+    ['code-explain',d.codeExplain],
+    ['a1h',d.a1h],['a1b',d.a1b],['a2h',d.a2h],['a2b',d.a2b],['a3h',d.a3h],['a3b',d.a3b],
+    ['rm1t',d.rm1t],['rm1d',d.rm1d],['rm2t',d.rm2t],['rm2d',d.rm2d],['rm3t',d.rm3t],['rm3d',d.rm3d],
+    ['footer-text',d.footer],['footer-sub',d.footerSub]
+  ];
+
+  ids.forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = val;
+  });
+}
+
+// ── ACCORDION ──
+function toggleAcc(el) {
+  el.classList.toggle('open');
+}
+
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((e) => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
